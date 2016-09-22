@@ -1,3 +1,10 @@
+Disclaimer - this code is old. Very very old. The below README was probably
+written some time in the late 1990s. Good luck getting it to compile.
+
+Jonathan Sloman - 2016
+
+-------------------------------------------------------------------------------
+
 This is xtush, a client for using talkers and muds. It is based on TUsh,
 programmed by Simon Marsh (aka Burble), with some bugs fixed, and the addition
 of some graphical support.
@@ -26,4 +33,4 @@ things, then you're in a room where drawing is disallowed.
 If there are any bugs, feel free to contact me.
 
 Jonathan Sloman
-jonathan@onlinemagic.co.uk
+
