@@ -1,0 +1,38 @@
+/************************************************************************
+ *                                                                      *
+ *      xtush - the TUsh with graphics   by Jonathan Sloman	        *
+ *                          Based on TUsh by Simon Marsh                *
+ ************************************************************************/
+
+	Installing xtush could not be easier (well, okay, it could, but..)
+
+You'll need to know what 'type' of unix you are on. The main 'flavours' are
+'bsd', such as SunOS 4, and 'sysv' (or System V), such as SunOS
+5/solaris 2. If you don't have any idea what type of unix you're on, try the
+command 'uname -a', which should tell you something. If you don't have any
+idea, try compiling for one, and if it doesn't work, try changing the
+Imakefile/Makefile to compile for the other.
+
+1) Edit the file 'Imakefile'
+
+	Everything is commented, so it should be obvious what to change
+               
+2) Edit the file 'config.h'
+
+	You shouldn't really need to change anything in here. Though
+	you can change it to suit your own tastes if you desire.
+
+3) type 'xmkmf' then type 'make'
+
+        This should compile everything with no problems.
+	If you get an error at this point about 'xmkmf: Command not found.'
+	then either you don't have X windows, or it's badly installed, or
+	your path is wrong. There is a standard Makefile included for
+	just these circumstances. Edit Makefile.std, change any bits you
+	want to, and then type 'make -f Makefile.std'. If you still can't
+	get it to work, then panic.
+
+4) read the doc on how to use it (tush.doc), and away you go.
+
+Jonathan Sloman
+jonathan@onlinemagic.co.uk

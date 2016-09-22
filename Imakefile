@@ -1,0 +1,55 @@
+#place where tush.doc will be looked for (relative to place where xtush is run
+#from. )
+HELPFILEDIR = .
+
+# Select your version of unix
+# Available flags - SYSV, system V Revision 4 type unixes
+#                   BSD, bsd type unixes
+#                   LINUX, For linux, oddly enough (use with BSD)
+#                   NO_FILIO, try defining this if you get errors with
+#                             not finding sys/filio.h
+#SYSTEM = -DSYSV
+SYSTEM = -DSYSV -DNO_FILIO
+#SYSTEM = -DSYSV -DLINUX
+#SYSTEM = -DBSD
+
+# Comment this out if you want to try compiling with fancy malloc information
+# type things, but it may cause problems compiling, depending on your system
+MALL = -DNO_FANCY_MALLOC
+
+# As default, xtush compiles to be just like tush, with some small bug fixes.
+# If you uncomment these lines, then the graphical capabilities will be
+# included as well. This includes support for the bsx mud graphics, and
+# my own system which is starting to be supported by foothills.
+
+#GRAPHICS = -DGRAPHICS
+#GRAPHLIBS =  -lm $(XLIB)
+
+
+# Swap the LOCAL_LIBRARIES definitions around if you're trying to compile this
+# on Solaris 2.2
+# The -L and -R should point to where your ucb libs are.
+
+# Solaris 2/SysV version
+LOCAL_LIBRARIES = 	-ltermcap -lnsl -lelf -lc $(GRAPHLIBS)
+
+#bsd unix version
+#LOCAL_LIBRARIES =	-ltermcap $(GRAPHLIBS)
+
+#And another line for linux systems
+#LOCAL_LIBRARIES =	-ltermcap -lbsd $(GRAPHLIBS)
+
+SRCS =	alias.c command.c main.c socket.c vscreen.c graphics.c bsxgraphics.c
+OBJS =	alias.o command.o main.o socket.o vscreen.o graphics.o bsxgraphics.o
+
+DEFINES = $(SYSTEM) $(MALL) $(GRAPHICS) -DHELPPATH='"$(HELPFILEDIR)/tush.doc"'
+
+ComplexProgramTarget(xtush)
+
+
+
+
+
+
+
+

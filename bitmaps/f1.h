@@ -1,0 +1,4 @@
+#define f1_width 4
+#define f1_height 6
+static char f1_bits[] = {
+   0x0e, 0x0f, 0x0f, 0x0b, 0x0f, 0x0f};

@@ -1,0 +1,29 @@
+This is xtush, a client for using talkers and muds. It is based on TUsh,
+programmed by Simon Marsh (aka Burble), with some bugs fixed, and the addition
+of some graphical support.
+
+Please read the file INSTALL for details of compiling xtush, and tush.doc
+for instructions of how to use it.
+
+The graphics support added consists of two things. Firstly, it supports
+the protocol used by the bsx graphics mud running in sweden.
+  birka.lysator.liu.se 7475
+This should just produce a graphics window which you can resize, but not do 
+anything in.
+
+Secondly, there is support for my own graphics protocol for a graphical
+talker, where people can send graphics as well as text. This is supported to
+some extent on foothills (toybox.infomagic.com 2010) and on underworld
+(dismayl.demon.co.uk 2010).
+
+If you turn graphics on there, you will get a window with a central drawing
+area, some colours at the top, and some tool-buttons at the side. It should be
+fairly intuitive how to draw things. Anything you draw will get sent via the
+talker to anyone in the same room as you who also has graphics on, so you can
+interactively doodle with people. If it just beeps when you try to draw
+things, then you're in a room where drawing is disallowed.
+
+If there are any bugs, feel free to contact me.
+
+Jonathan Sloman
+jonathan@onlinemagic.co.uk

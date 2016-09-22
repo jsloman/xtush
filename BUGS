@@ -1,0 +1,31 @@
+What follows is a list of known bugs as of version 1.5
+
+It should cope better with 24 bit displays and things, not sure if it's
+totally fixed though. It is possible to 'force' xtush to behave as if on a 24
+bit colour display or on a mono display by running xtush true (for 24 bit) or
+xtush mono (for mono).
+
+The spraypaint option doesn't work properly in black and white. All colours
+just get done in black, without using the bitmask. Not sure how to get around
+this, XDrawPoints just seems to ignore bitmasks.
+
+Ctrl-y is used on some systems to suspend the process, so can't be used to
+switch shells. All I can suggest for this is just use ctrl-u, which does the
+same thing in the other direction. Alternatively, it should be possible to
+disable the affect of ctrl-y using stty.
+
+Possible bugs with ioctl on System V type machines. I'm not sure about
+this. Also possible bugs with suspending and then reforegrounding.
+
+xtush now tries to recognise control sequences (such as ansi sequences or
+termcap sequences) in word wrapping, so hilighted/coloured stuff should
+get wrapped properly, but this very kludgy, so if you have problems, turn
+xtush wrapping off and let your terminal (eg xterm) do linewrapping.
+
+There is apparently a bug in triggers, where a trigger like >* or something
+will get set off for no apparent reason - this may be to do with terminal
+control codes or something, I'll look into it sometime.
+
+Probably lots of other bugs, but never mind. If you find anything buglike,
+feel free to email me with details at jonathan@onlinemagic.co.uk
+

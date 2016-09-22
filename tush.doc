@@ -1,0 +1,840 @@
+
+ ************************************************************************
+ *                                                                      *
+ *      TUsh - The Telnet User's Shell          Simon Marsh 1992        *
+ *                                                                      *
+ ************************************************************************
+
+        
+        This program is designed to be a user friendly front end for
+        making Telnet protocol connections. Features include a virtual
+        screen, multiple connections and powerful macro processing.
+
+
+Syntax
+
+        tush <arg>
+
+        Starts up TUsh, and executes <arg> as a TUsh command.
+
+
+The Input Line
+
+        TUsh operates in two modes. Standard mode is where everything
+	that is typed in gets processed for aliases and then sent to the
+        connected server. Command mode is where lines entered get interpreted 
+        as instructions to TUsh. In command mode, lines are still sent via
+        the alias processor, with the exception of when the 'alias' and
+        'unalias' commands are entered. This is to prevent unremoveable 
+        aliases. The modes are toggled between by using the escape (ESC) key.
+	Whilst in command mode the prompt is 'TUsh > '. You may set
+	the standard mode prompt to anything, or have it set
+	automatically by the server (see Prompt Processing).
+        If the screen gets corrupted while a line is being entered,
+	then the whole line will get deleted and redrawn this allows
+	comprehensive editing of the input line (see the list of control keys).
+
+
+Tab Completion
+
+	If tab is pressed whilst in command mode, then TUsh will
+	attempt to expand whatever has been typed in into a TUsh
+	command. eg
+
+	untr<tab>  completes into the untrigger
+
+	You can then continue editing the line as usual. The idea is
+	to be able to type the first few characters of a command,
+	press tab, and TUsh will complete the command thus reducing
+	typing.
+	If more than one match is found, then the matches will be
+	printed up for you to type in a few more specific characters. 
+
+	un<tab> 	gives	TUsh: Multiple matches
+				TUsh: unalias
+				TUsh: untrigger
+
+	This facility can also be used to list commands if you have
+	forgotten what they are, for instance
+
+	set<tab>	gives 	TUsh: Multiple matches
+				TUsh:  set prompt
+				TUsh:  set prompt mode
+				TUsh:  set kb
+				TUsh:  set kh
+				TUsh:  set sb
+				TUsh:  set sh	
+				TUsh:  set echo
+				TUsh:  set alias
+				TUsh:  set trigger
+				TUsh:  set time
+				TUsh:  set wildcard
+				TUsh:  set scratch
+				TUsh:  set bailout
+				TUsh:  set wrap size
+				TUsh:  set wrap
+				TUsh:  set opt
+				TUsh:  set blank
+
+	Pressing tab on a blank line lists all the TUsh commands.
+
+
+	Pressing tab whilst in standard mode performs a 'last' command
+	on what has been typed in, hence ...
+
+	10<tab>		recalls the tenth line in the keyboard history.
+
+	say<tab>	recalls the first line the keyboard history
+			that starts with 'say'.
+
+	This produces a similar effect to tab completion for commands,
+	but matching on what has been typed instead of the TUsh command
+	list.
+
+
+Shells
+
+        TUsh has the ability to connect to several servers via multiple
+        shells. Each shell can connect to one server, and has its own
+        histories and macro lists. Shells can be switched between and while
+        typing can only happen in the current shell, other shells will
+        automatically keep upto date, and will still respond to macros etc.
+        Note that to conserve system resources, shells do not multi-task. It
+        is not possible to switch shells and do something else, whilst a 
+        command is still happening in the current shell.
+        When a shell starts up, it will try to execute the file .tushrc
+        in your home directory, as a list of TUsh commands. TUsh is 
+        designed to be as flexible as possible, this means some commands are
+        deliberatly left 'vague' or as general as possible. The .tushrc
+        file can be used to set up more specific aliases, and to customise
+        TUsh to your tastes. Note that macros are local to each shell.
+	Take a look in the 'Samples' directory for a sample .tushrc file.
+
+Sites
+
+	To connect to a server simply type ..
+
+	open <address> <port>
+
+	Where <address> can be the numeric (eg 128.186.2.99) or name
+	(eg loligo.cc.fsu.edu) form of the server's address.
+	<port> is the port number on the server to connect to.
+
+	Example ... 	open paddington.city.ac.uk 2010
+
+	Pressing ^C (that is control and C) will interrupt the
+	connection process. Taking the user back to the TUsh command
+	prompt.
+		
+	TUsh has the ability to hold information about different
+	servers in a file '.tush-sites' in your home directory. 
+	Emtpy lines or ones beginning with # are ignored. Other lines
+	should be of the form :
+
+	<name> - <address> - <port> - <file>
+
+	Where - is used to represent one or several white spaces
+	(space/tab etc). An example is
+
+	Foothills	loligo.cc.fsu.edu	2010	foot-file
+
+	The file is used for automatic connection to different
+	servers. If, while in command mode and when no previous
+	connection has been made, the user types in something that is
+	not a command, TUsh will match against the name entries in
+	this file. If an entry is found, then the following is
+	performed ...
+
+		open <address> <port>
+		execute <file>
+
+	In the above example, typing foothills (caps are ignored) is
+	equivalent to typing
+	
+		open loligo.cc.fsu.edu 2010
+		execute foot-file
+
+	Since command line arguments are executed as TUsh commands,
+	calling up tush using
+
+		tush foothills
+
+	Will automatically start TUsh, and log into the site. Using
+	the <file> as well means you can start TUsh, connect, set up
+	aliases and autologin, in one line. 
+
+	The <file> can be used to set up server specific aliases etc
+	as well as provide automatic login (via the send command).
+	
+	An example .tush-sites file, and the execute files to go with
+	it can be found in the directory 'Samples'.
+	
+
+Secrecy Mode
+
+	Pressing ^w (that is control and w) toggles the secrecy mode
+	on and off. In this mode all text typed in simply appears as
+	*'s, and is stored into the key history as *'s.
+	TUsh will automatically enter this mode when the connected
+	server provides remote echoing (this is what should happen
+	when you type a password in), and will exit when local echoing
+	is resumed.
+	The visible effect of this, is that when typing a password,
+	all that will appear is *'s, and anybody snooping through the
+	key history will only see *'s.
+
+
+Macros
+
+        TUsh has two macro processors, one to reduce typing, the other to
+        produce automatic repsonse. Both processors work on lists that are
+        unique to each shell, so that different macros may be used for
+        different shells.
+
+        For automatic response the 'trigger' command is used. This command
+        takes two arguments. The first is the trigger and is usually placed
+        in quotes ("), and the second is the response (not enclosed in 
+        quotes). 
+        When characters are recieved from a server, they are held until a 
+        '\n' or '\r' is found. The line is then passed through the trigger 
+        processor which matches the trigger argument to the line. If a match 
+        is found, can be sent back to the server automatically or executed 
+        as a command.
+        The trigger argument can contain wildcard *'s which match up to any
+        text. If the trigger matches a line then any text looked over in
+        this way is passed as arguments to the response part of the command.
+        Also one space in the trigger may mean multiple spaces in the input
+        line.
+        
+        For example the trigger "* tells you *" will produce the following..
+
+        Burble says 'hi'        gives   no match
+        Burble tells you 'hi'   gives   a match with
+                                        1st argument - Burble
+                                        2nd argument - 'hi'
+        tells you      'hi'     gives   a match with
+                                        1st argument - empty
+                                        2nd argument - 'hi'
+        (Note: a trigger "* tells you*" gives a 2nd argument of
+         -      'hi' in the last case, ie it keeps the spaces);
+
+        The response part of the command is some text which is automatically
+        sent back to the server as if it had been typed in. Special 
+        instructions can also be embedded into the response, these are 
+        characterised by beginning with a % and are ...
+
+	%n  -   This is substituted for the newline character. 
+	%b  -   Substituted for /007 (the terminal bell character).
+        %t  -   This is substituted for the current time.
+	%x<no>  takes <no> mod 256 and inserts into output. Can be
+		used to send control characters around.
+        %c  -   This means process the text as a TUsh command, as opposed
+                to sending it to the server.
+        %p  -   Normally the line that was recieved from the server and that
+                has matched the trigger, will be printed to the screen, as  
+                well as any results of the response.
+                If a %p is present in the response, then the original line 
+                is not printed up on the screen.
+        %<no> - If a % is followed by a number, then it is substituted by 
+                the text of the corresponding argument.
+        %l  -   This converts the next word to be output into lower case. 
+                (this works whether the word came from the response or from
+                an argument ie % followed by a number).
+        %u  -   This converts the next word to be output into upper case.
+        %v  -   This capitalises the next word. (ie the first letter is 
+                converted to upper case, the rest of the word goes to lower 
+                case).
+        %s<c> - Toggles stripping of the character <c>. Once stripping is
+                enabled, another %s will stop stripping, because of this 
+                only one character may be stripped at once.
+	%o    - Turns off all output. This option simply throws away
+		anything that should have been printed on the screen.
+	%e    - Normally the expanded response will get sent through
+		the macro processor again, to check for more macros.
+		Using %e disables this (ie makes the macro non-recursive).
+	
+
+        Any text enclosed within { } gets passed through without change,
+        ie any % escapes within the { } are ignored.
+
+        An example should clarify things , given the trigger as above, ie
+        "* tells you *" and the line Burble tells you 'hi there', then a 
+        response of ...
+
+        tell %l%1 %s'%2                 sends the line - 
+                                        tell burble hi there
+        %cecho {%1 %v} %1               prints up on your screen -
+                                        %1 %v Burble
+        %c echo %1 is telling you %v%2  prints up on your screen -
+                                        Burble is telling you 'Hi there'
+        %c%p#                           Acts as a filter, ie any matches are
+                                        simply ignored and the matching
+                                        line not printed onto the screen.
+        hilight %1 tells you %2 %c%p    prints up high-lighted on the screen 
+                                        Burble tells you 'hi there'
+                                Without the %p then two lines would be
+                                printed, one normally and the other
+                                highlighted.
+        Note that the %c and %p can be anywhere in the response.
+
+        The syntax for the above example would be
+
+        trigger "* tells you *" hilight %1 tells you %2 %c%p
+
+        If the quotes are missed out from around the trigger, then TUsh
+        assumes that the trigger is only one word long and converts it to
+        "*word*". ie
+        
+                trigger you %c echo Hey someones talking about you !  
+        is the same as 
+                trigger "*you*" %c echo Hey someones talking about you !
+
+
+
+        To minimise typing, TUsh also has the 'alias' command. Aliases are
+        basically the same as triggers except that matches are tested
+        against what is sent to the server, instead of what is recieved. 
+        Every line that gets sent to the server will get passed through the
+        alias processor, this includes when files are piped, and the 
+        responses from a trigger command.
+        The same rules for the arguments apply, apart from %p, which
+        really has no meaning in this case, and when quotes are missing 
+        in the first argument.
+        If the quotes are missing from around the first argument, then
+        it is assumed the it is only one word long and converts to "word *"
+        (instead of "*word*" as in the case of the trigger command).
+        This makes TUsh more compatable with standard aliases, though if
+        you wish to be able to type in text after the alias, you must
+        include a %1 at the end of the response. e.g. a normal alias 
+        (as in 'fep' and shell alias commands) might be ...
+
+        alias bounce "emote bounces around"
+
+        On a simple level in TUsh this is the same as
+
+        alias bounce emote bounces around
+
+        However typing in 'bounce the room.' doesnt produce the output
+        'emote bounces around the room.' To do this simply have
+
+        alias bounce emote bounces around %1
+
+        then 'bounce'           produces 'emote bounces around'
+        and  'bounce the room.' produces 'emote bounces around the room.'
+        Just as with normal aliases.
+
+        The advantages to TUsh's way of doing things, is that vastly more
+        sophisticated aliases can be set up, for instance...
+
+        alias "*smile * *" %1emote %3 smiles happily at %2.
+
+        smile burble            gives   emote smiles happily at burble.
+        rsmile you burble       gives   remote burble smiles happily at you.
+
+        This is a pretty simple case of using arguments to the alias.
+
+
+	Both macro processors act recursively. This means that if
+	seperate macros match a particular line then they will all get
+	processed. Another consequence is that use of the %n escape
+	will allow one macro to do several things. 
+	Note, switches such as %c and %o will get carried down from
+	parent macros to any of their children. eg if the top macro
+	has %o set then no other macros that are are called from the
+	expansion line will produce output, whether they have %o or
+	not.
+
+	An example of a recursive alias is ...
+
+        alias "* hap *" %1 happily %2
+        alias smile %c send emote smiles %1%necho You are smiling %1 !
+	
+
+        smile hap       sends   	emote smiles happily.
+			and prints	You are smiling happily !
+
+
+	Using this feature very complicated macros can be built up. It
+	is an idea to use aliases of simple functions to build up more
+	complicated ones eg .
+
+	alias com %c%1		              - execute arg as a command.
+	alias started cd%ned %1%n1,$d%na%n
+	alias finished .%nx%n
+	
+	alias upload %ostarted %1%ncom <%1%nfinished$n
+
+
+	Or for nice example of a recursive trigger ...
+
+	alias remove %c#
+	trigger "*" %cremove%nalias remove {%c}untrigger"%1"%ntrigger "%1" {%c%p}#
+
+	This trigger will not display any lines recieved that are the
+	same as the previous line.
+
+        To prevent recursive loops, ie as is the case with the following  
+        alias
+
+        alias zing zing zang %1
+
+        there is a maximum limit as to how many times a line can be passed
+        through the macro processor. This limit is normally twenty
+	times, which should be adequate for most uses, but can be
+	changed via the 'set bailout' command.
+        
+	To prevent a macro being recursive, use the %e switch as part
+	of the response. This will prevent it getting sent to the
+	macro processor again, ie...
+
+	alias home %esay I'm going home%nhome
+
+	The %e switch prevents the 'home' at the end of the macro
+	being evaluated again.
+
+
+Prompt Processing
+
+	Some servers have provision for sending special signals to
+	distinguish which part of the text is a prompt. Normally, TUsh
+	will catch these signals and set its own prompt to match the
+	one sent out by the server, providing seamless changes without
+	having to construct complex triggers.
+ 	TUsh also has the capability to change how it reacts to these
+	signals using the 'set prompt mode' command.
+
+	If an argument of 'on' is given, then TUsh will automatically
+	set its prompt to be the same as the one sent by the server.
+	(this is the default mode)
+
+	If an argument of 'ignore' is given, TUsh will recognise what
+	the prompts are, but will simply throw them away. (this can be
+	used to prevent the servers prompts cluttering up the screen)
+
+	If an argument of 'off' is given, TUsh will simply treat
+	prompts like any other text, effectively ignoring the special
+	signals.
+
+	Giving no argument, toggles between the 'on' and 'off' modes.
+
+
+TUsh control key list.
+
+	These actions are all performed on pressing the control key
+	together with the relavent key.
+
+        ^a - start of line
+        ^b - back one char on the input line.
+        ^c - interrupt connection attempt
+        ^d - delete char
+        ^e - end of line
+        ^f - forward one char on the input line.
+        ^g - as system
+        ^h - (backspace/delete) backspace 
+        ^i - (tab) tab completion
+        ^j - (return) newline
+        ^k - delete line from cursor onwards
+        ^l - redraw screen
+        ^m - (return) newline.
+        ^n - next line in keyboard history.
+        ^o - as system
+        ^p - previous line in keyboard history.
+        ^q - as system (usually continues after scroll lock)
+        ^r - new shell
+        ^s - as system (usually starts scroll lock)
+        ^t - transpose characters on input line
+        ^u - next shell
+        ^v - as system
+        ^w - toggle secrecy mode
+        ^x - exit shell (close it up)
+        ^y - previous shell
+        ^z - as system (usually suspends TUsh)
+	
+        The ESC (escape) key toggles command processing.
+
+
+
+TUsh command list.
+
+#
+
+        A remark command for comments in executable files, anything after
+        this command and on the same line will be ignored. (Note: TUsh
+        commands must be on seperate lines, so
+                Command                         #comment
+        will not work.)
+
+alias <arg>
+
+        See section on macros.
+        If two arguments are given, then adds an alias to the alias list. 
+        If one argument is given, then searches through the alias list for
+        an alias with the same first argument, and if it finds one, 
+        displays the response to that alias.
+        If no arguments are given then all the current aliases will be 
+        displayed.
+        (Note: Aliases are local to each shell.)
+
+auto kill <arg>
+
+	If <arg> is 'on' then current shell will auto kill itself if
+	the the connection to the shell closes.
+	If <arg> is 'off' then the shell will not die when the
+	connection closes.
+	If no <arg> is giving this setting will toggle.	
+
+cd <arg>
+
+	Changes current directory to <arg>. If no <arg> is given,
+	changes to home directory. If the first character of <arg> is
+	~, this is expanded to be your home directory.
+
+cecho <arg>
+
+	Like 'echo' but prints to the current shell all the time.
+
+chilight <arg>
+
+	Like 'hilight' but high-lights to the current shell all the
+	time. 
+
+close
+
+	Closes the connection to the server.
+
+cls
+
+        Clears the screen of the current shell.
+
+echo <arg>
+
+        Simply prints <arg> out on the screen.
+
+execute <file>
+
+        Reads in <file> and runs each line as a command. The # command can
+        be used to add comments to the file, and empty lines will be
+        ignored. But remember that each command must have a seperate line.
+        
+help <command>
+	
+	Prints up help about the command <command>. If no <command> is
+	given then prints up this info about help.
+
+hilight <arg>
+
+        This command prints up <arg> high-lighted on screen. It is 
+        intended to be used with triggers, so that certain lines can be
+        high-lighted to draw attention to them. 
+        for example :   trigger "* tells you*" %p%c hilight %1 tells you%2
+         
+history <number>
+
+        Shows last <number> lines of the keyboard history. If no <number>
+        is given then all lines in the history are shown. A number is shown
+        next to each line, and this corresponds to the number that can be
+        used with the last or % commands, or with tab completion.
+
+kill
+
+        Kills the current shell, closing any buffers, connections, files etc
+        that may have been opened.
+
+last <arg>, %<arg>
+
+        Picks lines from the keyboard history according to <arg>.
+        If <arg> is a number, then the previous <arg>th line is recalled.
+        The previous numbers match those shown on the history command.
+        If <arg> is a string, then the last line whose first characters
+        correspond to <arg> is recalled. 
+
+malloc
+
+	Gives info about memory usage from the 'mallinfo()' call. Not
+	much use unless you know what each bit is.
+
+match <arg>
+
+        Takes the same type of arguments as the trigger command (see 
+        section on macros). However instead of matching triggers to 
+        lines coming from the server, this command acts on the screen
+        history. eg.
+
+        match "Burble says *" %cecho Burble has said %1.
+
+        will match to all lines in the screen history starting with
+        'Burble says '.
+
+monitor
+
+	Monitor shell for activity. The first time anything happens in
+	this shell, a message will be shown on the current shell.
+
+new <arg>
+
+        Starts up a new shell and switches to it. If <arg> is present then
+        it is passed to the new shell as a command.
+
+next    
+
+        Switches from the current shell to the next shell. If done in the
+        last shell, then it will switch back to the first.
+
+open <host> <port>
+
+	Attempts to connect to <host> on port number <port>.
+	<host> may be in numeric (eg 128.186.2.99) or name 
+	(eg loligo.cc.fsu.edu) form, whichever your computer supports.
+	
+	Pressing ^C (that is control and C) whilst connection is in
+	process will interrupt and break back into the TUsh command
+	prompt.	
+
+pipe <file>, | <file>, < <file>
+
+        Reads in <file> as if it had been typed in normally. 
+	Using 'pipe' or '|' mean that the file will get sent through
+	the alias processor first. Whereas using '<' means the file is
+	sent straight to the server.
+
+previous
+
+        Switches from the current shell to the previous shell. If done in
+        the first shell, then it will switch to the last.
+
+pwd
+
+	Prints up the current working directory.
+
+quit
+
+        Closes all shells and connections and exits from TUsh.
+
+recall <number>
+
+	If no argument is given then recalls the last line from the
+	screen history into the keyboard buffer. If <number> is given
+	then will recall the last <number>th line from the screen
+	history.
+
+refresh <from> <to>, repaint <from> <to>
+
+        If no argument is given, then the screen is redrawn from scratch.
+        If just <from> is given, then the last <from> lines of the 
+        screen history will be reprinted.
+	If <from> and <to> are given then the screen history from
+	line <from> to line <to> will be displayed.
+
+script <file>
+
+        If the shell is not already scripting, then this command starts
+        scripting to the file <file>. Without the argument <file> output
+        will be sent to a standard file. If the shell is already scripting 
+        then scripting will be stopped.
+        Scripting will copy everything printed onto the screen to a file.
+        Text entered at the prompt will not get copied, but the results of
+        any commands or actions will.
+
+send <arg>
+
+        Sends <arg> to the connected server.
+    
+set alias <arg>
+
+	If <arg> is 'on' turns on the alias processor.
+	If <arg> is 'off' turns off the alias processor.
+	If no <arg> is given then toggle the status of the alias
+	processor.
+
+set bailout <number>
+
+        Sets the maximum number of times that a line will go through the
+        macro processor. The default value is 20.
+
+set bell <arg>
+
+	If <arg> is 'on' then bells in other shells will show up on
+	the current shell.
+	if <arg> is 'off' then bells in other shells will be ignored.
+	If no <arg> is specified then the status will toggle.
+
+set blank <arg>
+
+	Normally, when echoing is off, any lines sent to the server
+	will not be echoed to the screen. TUsh can be set up so that
+	if return is pressed on a blank line, then this will get
+	echoed regardless of the echo mode. The purpose of this is to
+	be able to hit return to create blank lines or spaces on the
+	screen.
+
+	If <arg> is 'on' then blank lines will be printed.
+	if <arg> is 'off' blank lines will only be printed when echo
+	mode is on.
+	If no <arg> is specified, then blank lines are toggled on or off.
+
+set echo <arg>
+
+	If <arg> is 'on' then local echoing is turned on.
+	if <arg> is 'off' then local echoing is turned off.
+	If no <arg> is specified then local echoing is toggled between
+	on and off.
+
+set kb <number>
+
+        Sets the size of the keyboard input buffer. This buffer limits the
+        number of characters that can be typed in on one line. The default
+        value is 500 bytes.
+
+set kh <number>
+
+        Sets the size of the keyboard line history. This buffer limits the 
+        number of lines that can be recalled using the history commands.
+        The default value is 5000 bytes long.
+
+set opt <arg>
+
+	If <arg> is 'on' then turn telnet options viewing on.
+	if <arg> is 'off' then turn telnet options viewing off.
+	If no <arg> is specified then telnet options viewing is
+	toggled between on and off.
+
+set prompt <arg>
+
+        Changes the normal prompt to <arg>. If no <arg> is given then
+        changes back to the standard prompt (Note: the prompt when in
+        command mode cannot be changed). 
+
+set prompt mode <arg>
+	
+	If <arg> is 'on' then prompts from the server will be
+	recognised, and the TUsh prompt will be set to match.
+	if <arg> is 'off' then prompts from the server are treated as
+	normal text.
+	if <arg> is "ignore" then prompts from the server will be 
+	recognised, but will just be ignored.
+	If no <arg> is specified then the prompt mode will be toggled 
+	between auto prompt changing and treating as normal text.
+
+set sb <number>
+
+        Sets the size of the screen/socket buffer. This buffer limits the
+        size of the longest line that can be recieved by the program (a line
+        being the distance between two \n or \r characters). The default 
+        value is 1000 bytes long.
+
+set scratch <number>
+
+        Sets the size of the scratch buffer. This is a general purpose area
+        and should be at least 1000 bytes long. The default value is 5000
+        bytes.
+
+set sh <number>
+
+        Sets the size of the screen/socket history. This limits how much
+        text can be redrawn when using the repaint/refresh commands,
+	or how far back the match command works.
+        The default size is 5000 bytes long.
+
+set time <arg>
+
+        Sets the time format string to <arg>. This is a string in the same 
+        format as used by strftime() (use 'man strftime' to see what formats
+        can be used) and determines how the time is printed by the time 
+        command and %t escapes. If no <arg> is given then the time format
+        string will be changed back to the default setting.
+    
+set trigger <arg>
+
+	If <arg> is 'on' turns on the trigger processor.
+	If <arg> is 'off' turns off the trigger processor.
+	If no <arg> is given then toggle the status of the trigger
+	processor.
+
+set wildcard <arg>
+
+	Takes the first character of <arg> to use as the wildcard in
+	aliases and triggers. If <arg> is not present then defaults
+	back to the character *.
+
+set wrap <arg>
+
+	If <arg> is 'on' then word wrap is turned on.
+	if <arg> is 'off' then word wrap is turned off.
+	if <arg> is not specified word wrap is toggled between on and
+	off. 
+
+set wrap size <number>
+
+	Changes the maximum length of word that will get wrapped
+	whilst in word wrap mode.
+	If <number> is not specified, then the default value will be
+	set (10 characters).
+
+shell <arg>, !<arg>
+
+        Executes <arg> as a system command. (Uses the system() call.)
+
+stat
+
+        Shows some statistics about TUsh. 
+
+stop script
+
+        Turns off scripting (Note: this is equivalent to entering the
+        script command with no arguments whilst already scripting).
+
+time
+
+        Prints up the time in a format determined by set time.
+
+titlebar <arg>
+
+	If running TUsh in an xterm, this command changes the titlebar
+	of the window to <arg>.
+
+trigger <arg>
+
+        See section on macros.
+        If two arguments are given, then adds a trigger to the trigger list. 
+        If one argument is given, then searches through the trigger list for
+        a trigger with the same first argument, and if it finds one, 
+        displays the response to that trigger.
+        If no arguments are given then all the current triggers will be 
+        displayed.
+        (Note: Triggers are local to each shell.)
+
+unalias <arg>
+
+        Removes the alias with first argument <arg> from the alias list.
+        The same processing as with the alias command gets applied, so if
+        <arg> isn't within quotes ("), the first word will be used and
+        expanded to "word *". eg
+
+        unalias "*smile * *"  removes the alias with first arg "*smile * *"
+        unalias bounce        removes the alias with first arg "bounce *"  
+
+        (Note: Aliases are local to each shell.)
+
+untrigger <arg>
+
+        Removes the trigger with first argument <arg> from the trigger list.
+        The same processing as with the trigger command gets applied, so if
+        <arg> isn't within quotes ("), the first word will be used and
+        expanded to "*word*". eg
+
+        untrigger "* tells you *" removes the trigger with first argument
+                                                            "* tells you *"
+        untrigger you             removes the trigger with first argument
+                                                                    "*you*"
+
+        (Note: Triggers are local to each shell.)
+
+
+
+
+Bugs
+
+	Probably millions upon millions.
+
+	Its a shame it doesn't multitask.
+
